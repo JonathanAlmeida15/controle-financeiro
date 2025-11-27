@@ -5,3 +5,7 @@ Resta concertar os erros que aparecem após rodar o comando "mvn clean install",
 
 26/11/2025 - 04:06
 Como dito no commit do dia, o projeto em si funciona, fui testar o CRUD e não funcionou perfeitamente, apenas funcionou o POST, os outros 4 metodos deram erro 500, corrigir no próximo commit para finalizar o projeto com chave de ouro.
+
+
+27/11/2025 - 02:27
+Projeto finalizado com sucesso, código finalizado, banco criado, testes de CRUD feitos e bem sucedidos, vou apenas fazer o último commit.
