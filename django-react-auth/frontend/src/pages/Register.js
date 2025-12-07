@@ -101,7 +101,7 @@ export default function Register() {
         <p className="text-gray-400 text-center text-sm mt-6">
           Já possui conta?{" "}
           <a
-            href="/login"
+            href="http://localhost:3000"
             className="text-indigo-400 hover:underline font-semibold"
           >
             Faça login
