@@ -18,10 +18,10 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${security.jwt.secret}")
+    @Value("${app.jwt.secret}")
     private String secretKeyBase64;
 
-    @Value("${security.jwt.expiration}")
+    @Value("${app.jwt.expiration}")
     private long jwtExpiration;
 
     private SecretKey secretKey;
@@ -29,24 +29,26 @@ public class JwtService {
     @PostConstruct
     public void init() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
-        secretKey = Keys.hmacShaKeyFor(keyBytes); // retorna SecretKey (agora compatível)
+
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException(
+                "JWT secret key must be at least 256 bits (32 bytes)"
+            );
+        }
+
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Extrai o username
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Extrai qualquer claim
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
-        Claims claims = extractAllClaims(token);
-        return resolver.apply(claims);
+        return resolver.apply(extractAllClaims(token));
     }
 
-    // Gera token com claims adicionais
-    public String generateToken(Map<String, Object> extraClaims, String username) {
+    public String generateToken(String username) {
         return Jwts.builder()
-                .claims(extraClaims)
                 .subject(username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
@@ -54,24 +56,18 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateToken(String username) {
-        return generateToken(Map.of(), username);
-    }
-
-    // NOVO: Valida o token
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return extractUsername(token).equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        Date expiration = extractClaim(token, Claims::getExpiration);
-        return expiration.before(new Date());
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith(secretKey)   // agora compatível!
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
