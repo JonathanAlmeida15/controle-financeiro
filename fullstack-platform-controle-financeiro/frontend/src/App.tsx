@@ -1,15 +1,20 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
+import AppLayout from "./components/layout/AppLayout";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-
-      {/* Qualquer rota inválida */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route element={<AppLayout />} />
+        {/* Qualquer rota inválida */}
+        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/transactions" element={<Transactions />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

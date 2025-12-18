@@ -3,6 +3,16 @@ import BarChartYear from "../components/charts/BarChartYear";
 import "../styles/dashboard.css";
 
 export default function Dashboard() {
+
+  <div className="dashboard-header">
+    <h2>📊 Dashboard Financeiro</h2>
+
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/transactions">Transações</a>
+    </nav>
+  </div>
+
   const receitas = [
     { name: "Salário", value: 7000 },
     { name: "Extras", value: 1500 }

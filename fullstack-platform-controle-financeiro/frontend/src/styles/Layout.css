@@ -1,0 +1,44 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #0f1117;
+}
+
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #111827, #020617);
+  padding: 24px;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+}
+
+.sidebar h2 {
+  color: #22d3ee;
+  margin-bottom: 32px;
+  font-size: 1.3rem;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+}

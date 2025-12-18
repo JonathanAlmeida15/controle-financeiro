@@ -1,0 +1,73 @@
+.transactions-container {
+  padding: 40px;
+  color: #e5e7eb;
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.transactions-header h1 {
+  font-size: 1.4rem;
+}
+
+.transactions-header button {
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filters input,
+.filters select {
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px;
+  color: #e5e7eb;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #020617;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 14px;
+  text-align: left;
+  border-bottom: 1px solid #1e293b;
+}
+
+th {
+  background: #020617;
+  color: #94a3b8;
+}
+
+.entrada {
+  color: #00e676;
+}
+
+.saida {
+  color: #ff5252;
+}
+
+td button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
