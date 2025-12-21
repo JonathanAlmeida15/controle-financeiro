@@ -21,9 +21,9 @@ export default function Transactions() {
       category: "Renda",
       type: "Entrada",
       value: 7000,
-      month: "Maio",
-      date: "10/05/2025",
-      time: "09:00"
+      month: "Março",
+      date: "05/03/2025",
+      time: "09:00",
     },
     {
       id: 2,
@@ -31,57 +31,149 @@ export default function Transactions() {
       category: "Moradia",
       type: "Saída",
       value: 2500,
-      month: "Maio",
+      month: "Março",
+      date: "07/03/2025",
+      time: "14:30",
+    },
+    {
+      id: 3,
+      description: "Comida Japonesa",
+      category: "Alimentação",
+      type: "Saída",
+      value: 200,
+      month: "Abril",
+      date: "02/04/2025",
+      time: "09:30",
+    },
+    {
+      id: 4,
+      description: "BlueFit",
+      category: "Academia",
+      type: "Saída",
+      value: 150,
+      month: "Abril",
+      date: "05/04/2025",
+      time: "11:30",
+    },
+    {
+      id: 5,
+      description: "Passeio de Moto",
+      category: "Lazer",
+      type: "Saída",
+      value: 20,
+      month: "Abril",
+      date: "11/04/2025",
+      time: "17:30",
+    },
+    {
+      id: 6,
+      description: "Alimentação",
+      category: "Alimentação",
+      type: "Saída",
+      value: 100,
+      month: "Junho",
       date: "05/05/2025",
-      time: "14:30"
-    }
+      time: "19:30",
+    },
   ]);
+  
 
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [newTransaction, setNewTransaction] = useState({
+  /* FILTROS */
+  const [search, setSearch] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterType, setFilterType] = useState("");
+
+  const [form, setForm] = useState({
     description: "",
     category: "",
     type: "Entrada",
     value: "",
-    month: ""
+    month: "",
   });
 
+  function openNew() {
+    setEditingId(null);
+    setForm({
+      description: "",
+      category: "",
+      type: "Entrada",
+      value: "",
+      month: "",
+    });
+    setShowModal(true);
+  }
+
+  function openEdit(t: Transaction) {
+    setEditingId(t.id);
+    setForm({
+      description: t.description,
+      category: t.category,
+      type: t.type,
+      value: String(t.value),
+      month: t.month,
+    });
+    setShowModal(true);
+  }
+
   function handleSave() {
-    if (
-      !newTransaction.description ||
-      !newTransaction.category ||
-      !newTransaction.value ||
-      !newTransaction.month
-    ) {
+    if (!form.description || !form.category || !form.value || !form.month) {
       alert("Preencha todos os campos");
       return;
     }
 
     const now = new Date();
 
-    const transaction: Transaction = {
-      id: Date.now(),
-      description: newTransaction.description,
-      category: newTransaction.category,
-      type: newTransaction.type as "Entrada" | "Saída",
-      value: Number(newTransaction.value),
-      month: newTransaction.month,
-      date: now.toLocaleDateString(),
-      time: now.toLocaleTimeString().slice(0, 5)
-    };
+    if (editingId) {
+      setTransactions(
+        transactions.map((t) =>
+          t.id === editingId
+            ? {
+                ...t,
+                description: form.description,
+                category: form.category,
+                type: form.type as "Entrada" | "Saída",
+                value: Number(form.value),
+                month: form.month,
+              }
+            : t
+        )
+      );
+    } else {
+      const newTransaction: Transaction = {
+        id: Date.now(),
+        description: form.description,
+        category: form.category,
+        type: form.type as "Entrada" | "Saída",
+        value: Number(form.value),
+        month: form.month,
+        date: now.toLocaleDateString(),
+        time: now.toLocaleTimeString().slice(0, 5),
+      };
 
-    setTransactions([...transactions, transaction]);
+      setTransactions([...transactions, newTransaction]);
+    }
+
     setShowModal(false);
-
-    setNewTransaction({
-      description: "",
-      category: "",
-      type: "Entrada",
-      value: "",
-      month: ""
-    });
   }
+
+  function handleDelete(id: number) {
+    if (confirm("Deseja realmente excluir esta transação?")) {
+      setTransactions(transactions.filter((t) => t.id !== id));
+    }
+  }
+
+  const filteredTransactions = transactions.filter((t) => {
+    return (
+      t.description.toLowerCase().includes(search.toLowerCase()) &&
+      (filterMonth ? t.month === filterMonth : true) &&
+      (filterCategory ? t.category === filterCategory : true) &&
+      (filterType ? t.type === filterType : true)
+    );
+  });
 
   return (
     <>
@@ -92,41 +184,37 @@ export default function Transactions() {
 
         {/* FILTROS */}
         <div className="filters">
-          <input placeholder="Buscar descrição..." />
+          <input
+            placeholder="Buscar descrição..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-          <select>
-            <option>Mês</option>
-            <option>Janeiro</option>
-            <option>Fevereiro</option>
-            <option>Março</option>
-            <option>Abril</option>
-            <option>Maio</option>
-            <option>Junho</option>
-            <option>Julho</option>
-            <option>Agosto</option>
-            <option>Setembro</option>
-            <option>Outubro</option>
-            <option>Novembro</option>
-            <option>Dezembro</option>
+          <select onChange={(e) => setFilterMonth(e.target.value)}>
+            <option value="">Mês</option>
+            {[
+              "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+              "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+            ].map((m) => (
+              <option key={m}>{m}</option>
+            ))}
           </select>
 
-          <select>
-            <option>Categoria</option>
+          <select onChange={(e) => setFilterCategory(e.target.value)}>
+            <option value="">Categoria</option>
             <option>Renda</option>
             <option>Moradia</option>
             <option>Alimentação</option>
             <option>Lazer</option>
           </select>
 
-          <select>
-            <option>Tipo</option>
+          <select onChange={(e) => setFilterType(e.target.value)}>
+            <option value="">Tipo</option>
             <option>Entrada</option>
             <option>Saída</option>
           </select>
 
-          <button onClick={() => setShowModal(true)}>
-            + Nova Transação
-          </button>
+          <button onClick={openNew}>+ Nova Transação</button>
         </div>
 
         {/* TABELA */}
@@ -144,7 +232,7 @@ export default function Transactions() {
           </thead>
 
           <tbody>
-            {transactions.map((t) => (
+            {filteredTransactions.map((t) => (
               <tr key={t.id}>
                 <td>{t.description}</td>
                 <td>{t.category}</td>
@@ -153,8 +241,8 @@ export default function Transactions() {
                 <td>{t.date}</td>
                 <td>{t.time}</td>
                 <td>
-                  <button>✏️</button>
-                  <button>🗑️</button>
+                  <button onClick={() => openEdit(t)}>✏️</button>
+                  <button onClick={() => handleDelete(t.id)}>🗑️</button>
                 </td>
               </tr>
             ))}
@@ -166,29 +254,23 @@ export default function Transactions() {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h2>➕ Nova Transação</h2>
+            <h2>{editingId ? "✏️ Editar Transação" : "➕ Nova Transação"}</h2>
 
             <input
               placeholder="Descrição"
-              value={newTransaction.description}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, description: e.target.value })
-              }
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
 
             <input
               placeholder="Categoria"
-              value={newTransaction.category}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, category: e.target.value })
-              }
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
             />
 
             <select
-              value={newTransaction.type}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, type: e.target.value })
-              }
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
             >
               <option>Entrada</option>
               <option>Saída</option>
@@ -197,45 +279,28 @@ export default function Transactions() {
             <input
               type="number"
               placeholder="Valor"
-              value={newTransaction.value}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, value: e.target.value })
-              }
+              value={form.value}
+              onChange={(e) => setForm({ ...form, value: e.target.value })}
             />
 
             <select
-              value={newTransaction.month}
-              onChange={(e) =>
-                setNewTransaction({ ...newTransaction, month: e.target.value })
-              }
+              value={form.month}
+              onChange={(e) => setForm({ ...form, month: e.target.value })}
             >
               <option value="">Mês</option>
-              <option>Janeiro</option>
-              <option>Fevereiro</option>
-              <option>Março</option>
-              <option>Abril</option>
-              <option>Maio</option>
-              <option>Junho</option>
-              <option>Julho</option>
-              <option>Agosto</option>
-              <option>Setembro</option>
-              <option>Outubro</option>
-              <option>Novembro</option>
-              <option>Dezembro</option>
+              {[
+                "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+              ].map((m) => (
+                <option key={m}>{m}</option>
+              ))}
             </select>
 
             <div className="modal-actions">
-              <button
-                className="cancel-btn"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="cancel-btn" onClick={() => setShowModal(false)}>
                 Cancelar
               </button>
-
-              <button
-                className="save-btn"
-                onClick={handleSave}
-              >
+              <button className="save-btn" onClick={handleSave}>
                 Salvar
               </button>
             </div>
