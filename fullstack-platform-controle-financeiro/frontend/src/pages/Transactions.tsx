@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import "../styles/transactions.css";
+import { useTransactions } from "../context/TransactionsContext";
 
 interface Transaction {
   id: number;
@@ -14,69 +15,12 @@ interface Transaction {
 }
 
 export default function Transactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: 1,
-      description: "Salário",
-      category: "Renda",
-      type: "Entrada",
-      value: 7000,
-      month: "Março",
-      date: "05/03/2025",
-      time: "09:00",
-    },
-    {
-      id: 2,
-      description: "Aluguel",
-      category: "Moradia",
-      type: "Saída",
-      value: 2500,
-      month: "Março",
-      date: "07/03/2025",
-      time: "14:30",
-    },
-    {
-      id: 3,
-      description: "Comida Japonesa",
-      category: "Alimentação",
-      type: "Saída",
-      value: 200,
-      month: "Abril",
-      date: "02/04/2025",
-      time: "09:30",
-    },
-    {
-      id: 4,
-      description: "BlueFit",
-      category: "Academia",
-      type: "Saída",
-      value: 150,
-      month: "Abril",
-      date: "05/04/2025",
-      time: "11:30",
-    },
-    {
-      id: 5,
-      description: "Passeio de Moto",
-      category: "Lazer",
-      type: "Saída",
-      value: 20,
-      month: "Abril",
-      date: "11/04/2025",
-      time: "17:30",
-    },
-    {
-      id: 6,
-      description: "Alimentação",
-      category: "Alimentação",
-      type: "Saída",
-      value: 100,
-      month: "Junho",
-      date: "05/05/2025",
-      time: "19:30",
-    },
-  ]);
-  
+  const {
+    transactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction
+  } = useTransactions();
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -128,22 +72,19 @@ export default function Transactions() {
     const now = new Date();
 
     if (editingId) {
-      setTransactions(
-        transactions.map((t) =>
-          t.id === editingId
-            ? {
-                ...t,
-                description: form.description,
-                category: form.category,
-                type: form.type as "Entrada" | "Saída",
-                value: Number(form.value),
-                month: form.month,
-              }
-            : t
-        )
-      );
+      const original = transactions.find(t => t.id === editingId);
+      if (!original) return;
+
+      updateTransaction({
+        ...original,
+        description: form.description,
+        category: form.category,
+        type: form.type as "Entrada" | "Saída",
+        value: Number(form.value),
+        month: form.month,
+      });
     } else {
-      const newTransaction: Transaction = {
+      addTransaction({
         id: Date.now(),
         description: form.description,
         category: form.category,
@@ -152,9 +93,7 @@ export default function Transactions() {
         month: form.month,
         date: now.toLocaleDateString(),
         time: now.toLocaleTimeString().slice(0, 5),
-      };
-
-      setTransactions([...transactions, newTransaction]);
+      });
     }
 
     setShowModal(false);
@@ -162,7 +101,7 @@ export default function Transactions() {
 
   function handleDelete(id: number) {
     if (confirm("Deseja realmente excluir esta transação?")) {
-      setTransactions(transactions.filter((t) => t.id !== id));
+      deleteTransaction(id);
     }
   }
 
