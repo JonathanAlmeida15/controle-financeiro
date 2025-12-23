@@ -6,23 +6,28 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import { useTransactions } from "../../context/TransactionsContext";
 
-const data = [
-  { month: "Janeiro", entradas: 7000, saidas: 5200 },
-  { month: "Fevereiro", entradas: 7200, saidas: 4800 },
-  { month: "Março", entradas: 6800, saidas: 5000 },
-  { month: "Abri", entradas: 7500, saidas: 6200 },
-  { month: "Maio", entradas: 8000, saidas: 6000 },
-  { month: "Junho", entradas: 8000, saidas: 6000 },
-  { month: "Julho", entradas: 8000, saidas: 6000 },
-  { month: "Agosto", entradas: 8000, saidas: 6000 },
-  { month: "Setembro", entradas: 8000, saidas: 6000 },
-  { month: "Outubro", entradas: 8000, saidas: 6000 },
-  { month: "Novembro", entradas: 8000, saidas: 6000 },
-  { month: "Dezembro", entradas: 10000, saidas: 6000 }
+const months = [
+  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
 ];
 
 export default function BarChartYear() {
+  const { transactions } = useTransactions();
+
+  const data = months.map((month) => {
+    const entradas = transactions
+      .filter((t) => t.month === month && t.type === "Entrada")
+      .reduce((sum, t) => sum + t.value, 0);
+
+    const saidas = transactions
+      .filter((t) => t.month === month && t.type === "Saída")
+      .reduce((sum, t) => sum + t.value, 0);
+
+    return { month, entradas, saidas };
+  });
+
   return (
     <div className="chart-card">
       <h3>📊 Entradas x Saídas no Ano</h3>
