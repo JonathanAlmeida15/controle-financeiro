@@ -1,10 +1,14 @@
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\config\CorsConfig.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\config\JwtAuthFilter.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\config\SecurityConfig.java
+C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\controller\TransactionController.java
+C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\domain\Transaction.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\entity\Account.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\entity\Category.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\entity\User.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\FullstackPlatformApplication.java
+C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\repository\TransactionRepository.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\repository\UserRepository.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\service\JwtService.java
+C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\service\TransactionService.java
 C:\Projetos\fullstack-platform-controle-financeiro\backend\src\main\java\com\fullstack\platform\service\UserService.java
