@@ -8,23 +8,30 @@ import {
 import axios from "axios";
 
 /* =======================
-   TYPES
+   TYPES (UI FRIENDLY)
 ======================= */
 
 export interface Transaction {
   id: number;
   description: string;
   category: string;
-  type: "INCOME" | "EXPENSE";
+  type: "Entrada" | "Saída";
   amount: number;
-  occurredAt: string; // yyyy-mm-dd
+  date: string; // yyyy-mm-dd
+  hour: string; // HH:mm
 }
 
 interface TransactionsContextType {
   transactions: Transaction[];
   loading: boolean;
   fetchTransactions: () => Promise<void>;
-  addTransaction: (t: Omit<Transaction, "id">) => Promise<void>;
+  addTransaction: (t: {
+    description: string;
+    category: string;
+    type: "INCOME" | "EXPENSE";
+    amount: number;
+    occurredAt?: string;
+  }) => Promise<void>;
   updateTransaction: (t: Transaction) => Promise<void>;
   deleteTransaction: (id: number) => Promise<void>;
 }
@@ -38,12 +45,38 @@ const TransactionsContext = createContext<TransactionsContextType>(
 );
 
 /* =======================
-   API CONFIG
+   API CONFIG (JWT)
 ======================= */
 
 const api = axios.create({
   baseURL: "http://localhost:8080/api"
 });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+/* =======================
+   NORMALIZER (🔥 CHAVE)
+======================= */
+
+function normalizeTransaction(t: any): Transaction {
+  const dateTime = t.occurredAt || t.createdAt;
+
+  return {
+    id: t.id,
+    description: t.description ?? "",
+    category: t.category ?? "—",
+    type: t.type === "INCOME" ? "Entrada" : "Saída",
+    amount: Number(t.amount ?? 0),
+    date: dateTime ? dateTime.split("T")[0] : "",
+    hour: dateTime ? dateTime.split("T")[1]?.substring(0, 5) ?? "" : ""
+  };
+}
 
 /* =======================
    PROVIDER
@@ -57,25 +90,35 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   async function fetchTransactions() {
     setLoading(true);
     try {
-      const response = await api.get<Transaction[]>("/transactions");
-      setTransactions(response.data);
+      const response = await api.get<any[]>("/transactions");
+      setTransactions(response.data.map(normalizeTransaction));
     } catch (error) {
-      console.error("Erro ao buscar transações", error);
+      console.error("❌ Erro ao buscar transações", error);
     } finally {
       setLoading(false);
     }
   }
 
   /* 🔹 CRIAR */
-  async function addTransaction(transaction: Omit<Transaction, "id">) {
+  async function addTransaction(transaction: {
+    description: string;
+    category: string;
+    type: "INCOME" | "EXPENSE";
+    amount: number;
+    occurredAt?: string;
+  }) {
     try {
-      const response = await api.post<Transaction>(
-        "/transactions",
-        transaction
-      );
-      setTransactions((prev) => [...prev, response.data]);
+      await api.post("/transactions", {
+        ...transaction,
+        occurredAt:
+          transaction.occurredAt ||
+          new Date().toISOString()
+      });
+
+      // 🔥 sempre recarrega dados completos
+      await fetchTransactions();
     } catch (error) {
-      console.error("Erro ao criar transação", error);
+      console.error("❌ Erro ao criar transação", error);
     }
   }
 
@@ -83,11 +126,9 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   async function updateTransaction(transaction: Transaction) {
     try {
       await api.put(`/transactions/${transaction.id}`, transaction);
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === transaction.id ? transaction : t))
-      );
+      await fetchTransactions();
     } catch (error) {
-      console.error("Erro ao atualizar transação", error);
+      console.error("❌ Erro ao atualizar transação", error);
     }
   }
 
@@ -97,11 +138,11 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       await api.delete(`/transactions/${id}`);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
     } catch (error) {
-      console.error("Erro ao deletar transação", error);
+      console.error("❌ Erro ao deletar transação", error);
     }
   }
 
-  /* 🔹 CARREGAR AO INICIAR */
+  /* 🔹 INIT */
   useEffect(() => {
     fetchTransactions();
   }, []);
