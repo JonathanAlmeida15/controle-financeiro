@@ -8,30 +8,32 @@ import {
 import axios from "axios";
 
 /* =======================
-   TYPES (UI FRIENDLY)
+   TYPES (UI)
 ======================= */
 
 export interface Transaction {
   id: number;
   description: string;
-  category: string;
+  categoryId: string; // 👈 STRING (NUNCA undefined)
+  categoryName: string;
   type: "Entrada" | "Saída";
   amount: number;
   date: string; // yyyy-mm-dd
   hour: string; // HH:mm
 }
 
+interface CreateTransactionDTO {
+  description: string;
+  categoryId: string;
+  type: "INCOME" | "EXPENSE";
+  amount: number;
+}
+
 interface TransactionsContextType {
   transactions: Transaction[];
   loading: boolean;
   fetchTransactions: () => Promise<void>;
-  addTransaction: (t: {
-    description: string;
-    category: string;
-    type: "INCOME" | "EXPENSE";
-    amount: number;
-    occurredAt?: string;
-  }) => Promise<void>;
+  addTransaction: (t: CreateTransactionDTO) => Promise<void>;
   updateTransaction: (t: Transaction) => Promise<void>;
   deleteTransaction: (id: number) => Promise<void>;
 }
@@ -45,7 +47,7 @@ const TransactionsContext = createContext<TransactionsContextType>(
 );
 
 /* =======================
-   API CONFIG (JWT)
+   API
 ======================= */
 
 const api = axios.create({
@@ -61,20 +63,21 @@ api.interceptors.request.use((config) => {
 });
 
 /* =======================
-   NORMALIZER (🔥 CHAVE)
+   NORMALIZER (API → UI)
 ======================= */
 
 function normalizeTransaction(t: any): Transaction {
-  const dateTime = t.occurredAt || t.createdAt;
+  const date = t.occurredAt ?? "";
 
   return {
     id: t.id,
     description: t.description ?? "",
-    category: t.category ?? "—",
+    categoryId: t.category?.id ? String(t.category.id) : "",
+    categoryName: t.category?.name ?? "",
     type: t.type === "INCOME" ? "Entrada" : "Saída",
     amount: Number(t.amount ?? 0),
-    date: dateTime ? dateTime.split("T")[0] : "",
-    hour: dateTime ? dateTime.split("T")[1]?.substring(0, 5) ?? "" : ""
+    date,
+    hour: "00:00" // 👈 UI apenas
   };
 }
 
@@ -86,63 +89,59 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
 
-  /* 🔹 BUSCAR TODAS */
   async function fetchTransactions() {
     setLoading(true);
     try {
-      const response = await api.get<any[]>("/transactions");
-      setTransactions(response.data.map(normalizeTransaction));
-    } catch (error) {
-      console.error("❌ Erro ao buscar transações", error);
+      const res = await api.get("/transactions");
+      setTransactions(res.data.map(normalizeTransaction));
+    } catch (err) {
+      console.error("Erro ao buscar transações", err);
     } finally {
       setLoading(false);
     }
   }
 
-  /* 🔹 CRIAR */
-  async function addTransaction(transaction: {
-    description: string;
-    category: string;
-    type: "INCOME" | "EXPENSE";
-    amount: number;
-    occurredAt?: string;
-  }) {
+  async function addTransaction(data: CreateTransactionDTO) {
     try {
       await api.post("/transactions", {
-        ...transaction,
-        occurredAt:
-          transaction.occurredAt ||
-          new Date().toISOString()
+        description: data.description,
+        amount: data.amount,
+        type: data.type,
+        categoryId: Number(data.categoryId), // 👈 BACKEND
+        occurredAt: new Date().toISOString().split("T")[0] // 👈 LocalDate
       });
 
-      // 🔥 sempre recarrega dados completos
       await fetchTransactions();
-    } catch (error) {
-      console.error("❌ Erro ao criar transação", error);
+    } catch (err) {
+      console.error("Erro ao criar transação", err);
     }
   }
 
-  /* 🔹 ATUALIZAR */
-  async function updateTransaction(transaction: Transaction) {
+  async function updateTransaction(t: Transaction) {
     try {
-      await api.put(`/transactions/${transaction.id}`, transaction);
+      await api.put(`/transactions/${t.id}`, {
+        description: t.description,
+        amount: t.amount,
+        type: t.type === "Entrada" ? "INCOME" : "EXPENSE",
+        categoryId: Number(t.categoryId),
+        occurredAt: t.date // 👈 SEM "T"
+      });
+
       await fetchTransactions();
-    } catch (error) {
-      console.error("❌ Erro ao atualizar transação", error);
+    } catch (err) {
+      console.error("Erro ao atualizar transação", err);
     }
   }
 
-  /* 🔹 DELETAR */
   async function deleteTransaction(id: number) {
     try {
       await api.delete(`/transactions/${id}`);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
-    } catch (error) {
-      console.error("❌ Erro ao deletar transação", error);
+    } catch (err) {
+      console.error("Erro ao deletar transação", err);
     }
   }
 
-  /* 🔹 INIT */
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -162,10 +161,6 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     </TransactionsContext.Provider>
   );
 }
-
-/* =======================
-   HOOK
-======================= */
 
 export function useTransactions() {
   return useContext(TransactionsContext);
