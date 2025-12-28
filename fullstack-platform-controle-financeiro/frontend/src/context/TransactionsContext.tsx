@@ -14,19 +14,21 @@ import axios from "axios";
 export interface Transaction {
   id: number;
   description: string;
-  categoryId: string; // 👈 STRING (NUNCA undefined)
-  categoryName: string;
+  categoryId: number | null;
+  categoryName?: string;
   type: "Entrada" | "Saída";
   amount: number;
-  date: string; // yyyy-mm-dd
+  date: string; // yyyy-MM-dd
   hour: string; // HH:mm
 }
 
 interface CreateTransactionDTO {
   description: string;
-  categoryId: string;
+  categoryId: number | null;
   type: "INCOME" | "EXPENSE";
   amount: number;
+  date: string;
+  hour: string;
 }
 
 interface TransactionsContextType {
@@ -47,7 +49,7 @@ const TransactionsContext = createContext<TransactionsContextType>(
 );
 
 /* =======================
-   API
+   API CONFIG
 ======================= */
 
 const api = axios.create({
@@ -67,17 +69,19 @@ api.interceptors.request.use((config) => {
 ======================= */
 
 function normalizeTransaction(t: any): Transaction {
-  const date = t.occurredAt ?? "";
+  const dateTime = t.occurredAt || t.createdAt || "";
+
+  const [date = "", time = ""] = dateTime.split("T");
 
   return {
     id: t.id,
     description: t.description ?? "",
-    categoryId: t.category?.id ? String(t.category.id) : "",
-    categoryName: t.category?.name ?? "",
+    categoryId: t.category?.id ?? null,
+    categoryName: t.category?.name ?? "—",
     type: t.type === "INCOME" ? "Entrada" : "Saída",
     amount: Number(t.amount ?? 0),
     date,
-    hour: "00:00" // 👈 UI apenas
+    hour: time.substring(0, 5)
   };
 }
 
@@ -89,56 +93,60 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /* 🔹 FETCH */
   async function fetchTransactions() {
     setLoading(true);
     try {
-      const res = await api.get("/transactions");
-      setTransactions(res.data.map(normalizeTransaction));
-    } catch (err) {
-      console.error("Erro ao buscar transações", err);
+      const response = await api.get<any[]>("/transactions");
+      setTransactions(response.data.map(normalizeTransaction));
+    } catch (error) {
+      console.error("Erro ao buscar transações", error);
     } finally {
       setLoading(false);
     }
   }
 
+  /* 🔹 CREATE */
   async function addTransaction(data: CreateTransactionDTO) {
     try {
       await api.post("/transactions", {
         description: data.description,
         amount: data.amount,
         type: data.type,
-        categoryId: Number(data.categoryId), // 👈 BACKEND
-        occurredAt: new Date().toISOString().split("T")[0] // 👈 LocalDate
+        categoryId: data.categoryId,
+        occurredAt: data.date // ✅ LocalDate correto
       });
 
       await fetchTransactions();
-    } catch (err) {
-      console.error("Erro ao criar transação", err);
+    } catch (error) {
+      console.error("Erro ao criar transação", error);
     }
   }
 
-  async function updateTransaction(t: Transaction) {
+  /* 🔹 UPDATE */
+  async function updateTransaction(transaction: Transaction) {
     try {
-      await api.put(`/transactions/${t.id}`, {
-        description: t.description,
-        amount: t.amount,
-        type: t.type === "Entrada" ? "INCOME" : "EXPENSE",
-        categoryId: Number(t.categoryId),
-        occurredAt: t.date // 👈 SEM "T"
+      await api.put(`/transactions/${transaction.id}`, {
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type === "Entrada" ? "INCOME" : "EXPENSE",
+        categoryId: transaction.categoryId,
+        occurredAt: transaction.date // ✅ nunca undefined
       });
 
       await fetchTransactions();
-    } catch (err) {
-      console.error("Erro ao atualizar transação", err);
+    } catch (error) {
+      console.error("Erro ao atualizar transação", error);
     }
   }
 
+  /* 🔹 DELETE */
   async function deleteTransaction(id: number) {
     try {
       await api.delete(`/transactions/${id}`);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
-    } catch (err) {
-      console.error("Erro ao deletar transação", err);
+    } catch (error) {
+      console.error("Erro ao deletar transação", error);
     }
   }
 

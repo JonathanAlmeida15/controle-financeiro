@@ -3,15 +3,16 @@ import Navbar from "../components/Navbar";
 import "../styles/transactions.css";
 import { useTransactions } from "../context/TransactionsContext";
 
+/* 🔹 TIPAGEM ALINHADA COM O CONTEXT */
 interface Transaction {
   id: number;
   description: string;
-  category: string;
+  categoryId: number | null;
+  categoryName?: string;
   type: "Entrada" | "Saída";
-  value: number;
-  month: string;
+  amount: number;
   date: string;
-  time: string;
+  hour: string;
 }
 
 export default function Transactions() {
@@ -27,26 +28,24 @@ export default function Transactions() {
 
   /* FILTROS */
   const [search, setSearch] = useState("");
-  const [filterMonth, setFilterMonth] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterType, setFilterType] = useState("");
 
+  /* FORM */
   const [form, setForm] = useState({
     description: "",
-    category: "",
+    categoryName: "",
     type: "Entrada",
-    value: "",
-    month: "",
+    amount: ""
   });
 
   function openNew() {
     setEditingId(null);
     setForm({
       description: "",
-      category: "",
+      categoryName: "",
       type: "Entrada",
-      value: "",
-      month: "",
+      amount: ""
     });
     setShowModal(true);
   }
@@ -55,44 +54,36 @@ export default function Transactions() {
     setEditingId(t.id);
     setForm({
       description: t.description,
-      category: t.category,
+      categoryName: t.categoryName ?? "",
       type: t.type,
-      value: String(t.value),
-      month: t.month,
+      amount: String(t.amount)
     });
     setShowModal(true);
   }
 
-  function handleSave() {
-    if (!form.description || !form.category || !form.value || !form.month) {
-      alert("Preencha todos os campos");
+  async function handleSave() {
+    if (!form.description || !form.amount) {
+      alert("Preencha os campos obrigatórios");
       return;
     }
-
-    const now = new Date();
 
     if (editingId) {
       const original = transactions.find(t => t.id === editingId);
       if (!original) return;
 
-      updateTransaction({
+      await updateTransaction({
         ...original,
         description: form.description,
-        category: form.category,
         type: form.type as "Entrada" | "Saída",
-        value: Number(form.value),
-        month: form.month,
+        amount: Number(form.amount)
+        // ⚠️ categoria NÃO é alterada aqui porque o backend não suporta ainda
       });
     } else {
-      addTransaction({
-        id: Date.now(),
+      await addTransaction({
         description: form.description,
-        category: form.category,
-        type: form.type as "Entrada" | "Saída",
-        value: Number(form.value),
-        month: form.month,
-        date: now.toLocaleDateString(),
-        time: now.toLocaleTimeString().slice(0, 5),
+        category: form.categoryName || "Outros",
+        type: form.type === "Entrada" ? "INCOME" : "EXPENSE",
+        amount: Number(form.amount)
       });
     }
 
@@ -108,8 +99,7 @@ export default function Transactions() {
   const filteredTransactions = transactions.filter((t) => {
     return (
       t.description.toLowerCase().includes(search.toLowerCase()) &&
-      (filterMonth ? t.month === filterMonth : true) &&
-      (filterCategory ? t.category === filterCategory : true) &&
+      (filterCategory ? t.categoryName === filterCategory : true) &&
       (filterType ? t.type === filterType : true)
     );
   });
@@ -129,22 +119,12 @@ export default function Transactions() {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          <select onChange={(e) => setFilterMonth(e.target.value)}>
-            <option value="">Mês</option>
-            {[
-              "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-              "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-            ].map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
-
           <select onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="">Categoria</option>
-            <option>Renda</option>
-            <option>Moradia</option>
-            <option>Alimentação</option>
-            <option>Lazer</option>
+            {[...new Set(transactions.map(t => t.categoryName))].map(
+              (c) =>
+                c && <option key={c}>{c}</option>
+            )}
           </select>
 
           <select onChange={(e) => setFilterType(e.target.value)}>
@@ -174,11 +154,11 @@ export default function Transactions() {
             {filteredTransactions.map((t) => (
               <tr key={t.id}>
                 <td>{t.description}</td>
-                <td>{t.category}</td>
+                <td>{t.categoryName ?? "—"}</td>
                 <td>{t.type}</td>
-                <td>R$ {t.value}</td>
+                <td>R$ {t.amount.toFixed(2)}</td>
                 <td>{t.date}</td>
-                <td>{t.time}</td>
+                <td>{t.hour}</td>
                 <td>
                   <button onClick={() => openEdit(t)}>✏️</button>
                   <button onClick={() => handleDelete(t.id)}>🗑️</button>
@@ -198,18 +178,24 @@ export default function Transactions() {
             <input
               placeholder="Descrição"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
             />
 
             <input
               placeholder="Categoria"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              value={form.categoryName}
+              onChange={(e) =>
+                setForm({ ...form, categoryName: e.target.value })
+              }
             />
 
             <select
               value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, type: e.target.value })
+              }
             >
               <option>Entrada</option>
               <option>Saída</option>
@@ -218,25 +204,17 @@ export default function Transactions() {
             <input
               type="number"
               placeholder="Valor"
-              value={form.value}
-              onChange={(e) => setForm({ ...form, value: e.target.value })}
+              value={form.amount}
+              onChange={(e) =>
+                setForm({ ...form, amount: e.target.value })
+              }
             />
 
-            <select
-              value={form.month}
-              onChange={(e) => setForm({ ...form, month: e.target.value })}
-            >
-              <option value="">Mês</option>
-              {[
-                "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-                "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-              ].map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
-
             <div className="modal-actions">
-              <button className="cancel-btn" onClick={() => setShowModal(false)}>
+              <button
+                className="cancel-btn"
+                onClick={() => setShowModal(false)}
+              >
                 Cancelar
               </button>
               <button className="save-btn" onClick={handleSave}>

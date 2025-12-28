@@ -2,10 +2,11 @@ package com.fullstack.platform.controller;
 
 import com.fullstack.platform.domain.Transaction;
 import com.fullstack.platform.service.TransactionService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -15,30 +16,42 @@ public class TransactionController {
 
     private final TransactionService service;
 
-    // LISTAR
     @GetMapping
     public List<Transaction> list() {
-        // depois ligamos ao usuário logado
         return service.findAll(1L);
     }
 
-    // CRIAR
     @PostMapping
-    public Transaction create(@RequestBody Transaction transaction) {
-        transaction.setUserId(1L);
-        transaction.setAccountId(1L);
-        return service.save(transaction);
+    public Transaction create(@RequestBody TransactionRequest request) {
+        Transaction t = new Transaction();
+        t.setDescription(request.getDescription());
+        t.setAmount(request.getAmount());
+        t.setType(request.getType());
+        t.setOccurredAt(request.getOccurredAt());
+        t.setCategoryId(request.getCategoryId());
+        t.setUserId(1L);
+        t.setAccountId(1L);
+
+        return service.save(t);
     }
 
-    // EDITAR
     @PutMapping("/{id}")
-    public Transaction update(@PathVariable Long id, @RequestBody Transaction transaction) {
-        return service.update(id, transaction);
+    public Transaction update(@PathVariable Long id, @RequestBody TransactionRequest request) {
+        return service.updateFromRequest(id, request);
     }
 
-    // EXCLUIR
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+}
+
+/* DTO */
+@Data
+class TransactionRequest {
+    private String description;
+    private Double amount;
+    private String type; // INCOME | EXPENSE
+    private Long categoryId;
+    private LocalDate occurredAt;
 }
