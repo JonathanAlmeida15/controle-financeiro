@@ -79,13 +79,20 @@ export default function Transactions() {
         // ⚠️ categoria NÃO é alterada aqui porque o backend não suporta ainda
       });
     } else {
+      const now = new Date();
+      const date = now.toISOString().split("T")[0]; // yyyy-MM-dd
+      const hour = now.toTimeString().slice(0, 5);  // HH:mm
+
       await addTransaction({
         description: form.description,
-        category: form.categoryName || "Outros",
+        categoryId: null, // backend ainda não resolve categoria por nome
         type: form.type === "Entrada" ? "INCOME" : "EXPENSE",
-        amount: Number(form.amount)
+        amount: Number(form.amount),
+        date,
+        hour
       });
     }
+
 
     setShowModal(false);
   }

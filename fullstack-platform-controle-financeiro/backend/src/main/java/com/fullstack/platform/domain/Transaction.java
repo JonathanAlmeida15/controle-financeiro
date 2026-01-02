@@ -2,6 +2,7 @@ package com.fullstack.platform.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,12 +27,13 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(nullable = false)
-    private String type; // INCOME ou EXPENSE
+    private String type;
 
     private String description;
 
     @Column(nullable = false)
     private LocalDate occurredAt;
 
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

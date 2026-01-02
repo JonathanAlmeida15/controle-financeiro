@@ -1,4 +1,5 @@
 com\fullstack\platform\entity\User$UserBuilder.class
+com\fullstack\platform\controller\dto\TransactionRequest.class
 com\fullstack\platform\config\SecurityConfig.class
 com\fullstack\platform\config\CorsConfig$1.class
 com\fullstack\platform\entity\Category$CategoryBuilder.class
