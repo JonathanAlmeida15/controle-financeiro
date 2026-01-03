@@ -1,4 +1,4 @@
-package com.fullstack.platform.controller.dto;
+package com.fullstack.platform.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -7,7 +7,7 @@ public class TransactionRequest {
 
     private String description;
     private BigDecimal amount;
-    private String type;
+    private String type;        // INCOME ou EXPENSE
     private Long categoryId;
     private LocalDate occurredAt;
 
