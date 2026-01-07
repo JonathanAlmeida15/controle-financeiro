@@ -13,11 +13,3 @@ Sistema de controle financeiro — Spring Boot + React + TypeScript
 ## Comando para rodar o ambiente de Homologação: 
 $env:SPRING_PROFILES_ACTIVE="homolog"
 mvn spring-boot:run
-
-
-## Variaveis de ambiente e temporarias (Ativas somente na janela do PowerShell)
-
-$env:SPRING_PROFILES_ACTIVE="prod"
-$env:DB_USER="root"
-$env:DB_PASSWORD="66360180"          
-$env:JWT_SECRET="a9F3kLmP0X2R8s7ZQWERTYuiopASDFGHJKL123456789" 
