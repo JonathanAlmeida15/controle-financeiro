@@ -2,7 +2,7 @@ package com.fullstack.platform.domain;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
@@ -20,9 +20,21 @@ public class Transaction {
 
     private String category;
 
-    private LocalDate createdAt;
+    @Column(name = "occurred_at", nullable = false)
+    private LocalDateTime occurredAt;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     public Transaction() {}
+
+    // 🔐 Define automaticamente antes de salvar no banco
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.occurredAt = now;
+    }
 
     // getters e setters
     public Long getId() {
@@ -65,11 +77,19 @@ public class Transaction {
         this.category = category;
     }
 
-    public LocalDate getCreatedAt() {
+    public LocalDateTime getOccurredAt() {
+        return occurredAt;
+    }
+
+    public void setOccurredAt(LocalDateTime occurredAt) {
+        this.occurredAt = occurredAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }

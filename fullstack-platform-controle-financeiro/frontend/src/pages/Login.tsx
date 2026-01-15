@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 import "../styles/login.css";
 
 export default function Login() {
@@ -9,22 +10,26 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
 
     if (!email || !password) {
       setError("Preencha todos os campos");
       return;
     }
 
-    // 🔐 Credenciais fixas (mock)
-    if (
-      email === "jonathangabrielcar@gmail.com" &&
-      password === "66360180"
-    ) {
-      setError("");
+    try {
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      // 🔐 SALVA TOKEN
+      localStorage.setItem("token", response.data.token);
+
       navigate("/dashboard");
-    } else {
+    } catch (err) {
       setError("Email ou senha inválidos");
     }
   }

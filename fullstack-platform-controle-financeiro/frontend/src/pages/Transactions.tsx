@@ -3,11 +3,9 @@ import Navbar from "../components/Navbar";
 import "../styles/transactions.css";
 import { useTransactions } from "../context/TransactionsContext";
 
-/* 🔹 TIPAGEM ALINHADA COM O CONTEXT */
 interface Transaction {
   id: number;
   description: string;
-  categoryId: number | null;
   categoryName?: string;
   type: "Entrada" | "Saída";
   amount: number;
@@ -74,25 +72,17 @@ export default function Transactions() {
       await updateTransaction({
         ...original,
         description: form.description,
-        type: form.type as "Entrada" | "Saída",
+        type: form.type,
         amount: Number(form.amount)
-        // ⚠️ categoria NÃO é alterada aqui porque o backend não suporta ainda
       });
     } else {
-      const now = new Date();
-      const date = now.toISOString().split("T")[0]; // yyyy-MM-dd
-      const hour = now.toTimeString().slice(0, 5);  // HH:mm
-
       await addTransaction({
         description: form.description,
-        categoryId: null, // backend ainda não resolve categoria por nome
+        categoryId: null,
         type: form.type === "Entrada" ? "INCOME" : "EXPENSE",
-        amount: Number(form.amount),
-        date,
-        hour
+        amount: Number(form.amount)
       });
     }
-
 
     setShowModal(false);
   }
@@ -103,13 +93,16 @@ export default function Transactions() {
     }
   }
 
-  const filteredTransactions = transactions.filter((t) => {
-    return (
-      t.description.toLowerCase().includes(search.toLowerCase()) &&
-      (filterCategory ? t.categoryName === filterCategory : true) &&
-      (filterType ? t.type === filterType : true)
-    );
-  });
+  const filteredTransactions = transactions.filter(transaction => {
+  const title = transaction.title ?? '';
+  const category = transaction.category ?? '';
+
+  return (
+    title.toLowerCase().includes(search.toLowerCase()) ||
+    category.toLowerCase().includes(search.toLowerCase())
+  );
+});
+
 
   return (
     <>
@@ -129,8 +122,7 @@ export default function Transactions() {
           <select onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="">Categoria</option>
             {[...new Set(transactions.map(t => t.categoryName))].map(
-              (c) =>
-                c && <option key={c}>{c}</option>
+              c => c && <option key={c}>{c}</option>
             )}
           </select>
 
@@ -140,7 +132,9 @@ export default function Transactions() {
             <option>Saída</option>
           </select>
 
-          <button onClick={openNew}>+ Nova Transação</button>
+          <button className="new-btn" onClick={openNew}>
+            + Nova Transação
+          </button>
         </div>
 
         {/* TABELA */}
@@ -158,7 +152,7 @@ export default function Transactions() {
           </thead>
 
           <tbody>
-            {filteredTransactions.map((t) => (
+            {filteredTransactions.map(t => (
               <tr key={t.id}>
                 <td>{t.description}</td>
                 <td>{t.categoryName ?? "—"}</td>
@@ -224,7 +218,10 @@ export default function Transactions() {
               >
                 Cancelar
               </button>
-              <button className="save-btn" onClick={handleSave}>
+              <button
+                className="save-btn"
+                onClick={handleSave}
+              >
                 Salvar
               </button>
             </div>

@@ -13,27 +13,16 @@ import axios from "axios";
 
 export interface Transaction {
   id: number;
-  description: string;
-  categoryId: number | null;
-  categoryName?: string;
+  title: string;
+  category?: string;
   type: "Entrada" | "Saída";
-  amount: number;
-  date: string; // yyyy-MM-dd
-  hour: string; // HH:mm
-}
-
-interface CreateTransactionDTO {
-  description: string;
-  categoryId: number | null;
-  type: "INCOME" | "EXPENSE";
   amount: number;
   date: string;
   hour: string;
 }
 
 interface CreateTransactionDTO {
-  description: string;
-  categoryId: number | null;
+  title: string;
   type: "INCOME" | "EXPENSE";
   amount: number;
 }
@@ -41,6 +30,15 @@ interface CreateTransactionDTO {
 /* =======================
    CONTEXT
 ======================= */
+
+interface TransactionsContextType {
+  transactions: Transaction[];
+  loading: boolean;
+  fetchTransactions: () => Promise<void>;
+  addTransaction: (data: CreateTransactionDTO) => Promise<void>;
+  updateTransaction: (t: Transaction) => Promise<void>;
+  deleteTransaction: (id: number) => Promise<void>;
+}
 
 const TransactionsContext = createContext({} as TransactionsContextType);
 
@@ -63,14 +61,13 @@ api.interceptors.request.use((config) => {
 ======================= */
 
 function normalizeTransaction(t: any): Transaction {
-  const dateTime = t.occurredAt || t.createdAt || "";
+  const dateTime = t.createdAt ?? "";
   const [date = "", time = ""] = dateTime.split("T");
 
   return {
     id: t.id,
-    description: t.description ?? "",
-    categoryId: t.category?.id ?? null,
-    categoryName: t.category?.name ?? "—",
+    title: t.title ?? "",
+    category: t.category ?? "—",
     type: t.type === "INCOME" ? "Entrada" : "Saída",
     amount: Number(t.amount ?? 0),
     date,
@@ -97,23 +94,16 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   }
 
   async function addTransaction(data: CreateTransactionDTO) {
-  await api.post("/transactions", {
-    description: data.description,
-    amount: data.amount,
-    type: data.type,
-    categoryId: data.categoryId
-  });
-
-  await fetchTransactions();
-}
+    await api.post("/transactions", data);
+    await fetchTransactions();
+  }
 
   async function updateTransaction(t: Transaction) {
     await api.put(`/transactions/${t.id}`, {
-      description: t.description,
+      title: t.title,
       amount: t.amount,
       type: t.type === "Entrada" ? "INCOME" : "EXPENSE",
-      categoryId: t.categoryId,
-      occurredAt: `${t.date}T${t.hour}`
+      category: t.category
     });
 
     await fetchTransactions();

@@ -4,7 +4,6 @@ import com.fullstack.platform.domain.Transaction;
 import com.fullstack.platform.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -17,7 +16,7 @@ public class TransactionService {
     }
 
     public Transaction create(Transaction transaction) {
-        transaction.setCreatedAt(LocalDate.now());
+        // createdAt é definido automaticamente pela Entity (@PrePersist)
         return repository.save(transaction);
     }
 
