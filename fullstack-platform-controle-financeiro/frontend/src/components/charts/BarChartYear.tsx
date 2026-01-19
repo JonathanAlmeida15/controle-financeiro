@@ -16,14 +16,22 @@ const months = [
 export default function BarChartYear() {
   const { transactions } = useTransactions();
 
+  const getMonthName = (dateValue: string) => {
+    if (!dateValue) return "";
+    const parsed = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return "";
+    const monthName = parsed.toLocaleString("pt-BR", { month: "long" });
+    return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  };
+
   const data = months.map((month) => {
     const entradas = transactions
-      .filter((t) => t.month === month && t.type === "Entrada")
-      .reduce((sum, t) => sum + t.value, 0);
+      .filter((t) => getMonthName(t.date) === month && t.type === "Entrada")
+      .reduce((sum, t) => sum + t.amount, 0);
 
     const saidas = transactions
-      .filter((t) => t.month === month && t.type === "Saída")
-      .reduce((sum, t) => sum + t.value, 0);
+      .filter((t) => getMonthName(t.date) === month && t.type === "Saída")
+      .reduce((sum, t) => sum + t.amount, 0);
 
     return { month, entradas, saidas };
   });
