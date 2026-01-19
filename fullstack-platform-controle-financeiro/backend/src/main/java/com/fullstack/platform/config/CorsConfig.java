@@ -11,17 +11,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig {
 
 
-@Bean
-public WebMvcConfigurer corsConfigurer() {
-return new WebMvcConfigurer() {
-@Override
-public void addCorsMappings(CorsRegistry registry) {
-registry.addMapping("/**")
-.allowedOrigins("http://localhost:5173")
-.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-.allowedHeaders("*")
-.allowCredentials(true);
-}
-};
-}
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                    .allowedOriginPatterns(
+                        "http://localhost:5173",
+                        "http://127.0.0.1:5173",
+                        "http://192.168.*.*:5173"
+                    )
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedHeaders("*")
+                    .allowCredentials(true);
+            }
+        };
+    }
 }
