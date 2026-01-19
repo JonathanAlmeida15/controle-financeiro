@@ -1,17 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import "../styles/transactions.css";
-import { useTransactions } from "../context/TransactionsContext";
-
-interface Transaction {
-  id: number;
-  description: string;
-  categoryName?: string;
-  type: "Entrada" | "Saída";
-  amount: number;
-  date: string;
-  hour: string;
-}
+import { useTransactions, Transaction as TransactionItem } from "../context/TransactionsContext";
 
 export default function Transactions() {
   const {
@@ -31,8 +21,8 @@ export default function Transactions() {
 
   /* FORM */
   const [form, setForm] = useState({
-    description: "",
-    categoryName: "",
+    title: "",
+    category: "",
     type: "Entrada",
     amount: ""
   });
@@ -40,19 +30,19 @@ export default function Transactions() {
   function openNew() {
     setEditingId(null);
     setForm({
-      description: "",
-      categoryName: "",
+      title: "",
+      category: "",
       type: "Entrada",
       amount: ""
     });
     setShowModal(true);
   }
 
-  function openEdit(t: Transaction) {
+  function openEdit(t: TransactionItem) {
     setEditingId(t.id);
     setForm({
-      description: t.description,
-      categoryName: t.categoryName ?? "",
+      title: t.title,
+      category: t.category ?? "",
       type: t.type,
       amount: String(t.amount)
     });
@@ -60,7 +50,7 @@ export default function Transactions() {
   }
 
   async function handleSave() {
-    if (!form.description || !form.amount) {
+    if (!form.title || !form.amount) {
       alert("Preencha os campos obrigatórios");
       return;
     }
@@ -71,14 +61,15 @@ export default function Transactions() {
 
       await updateTransaction({
         ...original,
-        description: form.description,
+        title: form.title,
+        category: form.category || null,
         type: form.type,
         amount: Number(form.amount)
       });
     } else {
       await addTransaction({
-        description: form.description,
-        categoryId: null,
+        title: form.title,
+        category: form.category || null,
         type: form.type === "Entrada" ? "INCOME" : "EXPENSE",
         amount: Number(form.amount)
       });
@@ -94,14 +85,18 @@ export default function Transactions() {
   }
 
   const filteredTransactions = transactions.filter(transaction => {
-  const title = transaction.title ?? '';
-  const category = transaction.category ?? '';
+    const title = transaction.title ?? "";
+    const category = transaction.category ?? "";
+    const matchesSearch =
+      title.toLowerCase().includes(search.toLowerCase()) ||
+      category.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = filterCategory
+      ? category === filterCategory
+      : true;
+    const matchesType = filterType ? transaction.type === filterType : true;
 
-  return (
-    title.toLowerCase().includes(search.toLowerCase()) ||
-    category.toLowerCase().includes(search.toLowerCase())
-  );
-});
+    return matchesSearch && matchesCategory && matchesType;
+  });
 
 
   return (
@@ -121,7 +116,7 @@ export default function Transactions() {
 
           <select onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="">Categoria</option>
-            {[...new Set(transactions.map(t => t.categoryName))].map(
+            {[...new Set(transactions.map(t => t.category))].map(
               c => c && <option key={c}>{c}</option>
             )}
           </select>
@@ -154,8 +149,8 @@ export default function Transactions() {
           <tbody>
             {filteredTransactions.map(t => (
               <tr key={t.id}>
-                <td>{t.description}</td>
-                <td>{t.categoryName ?? "—"}</td>
+                <td>{t.title}</td>
+                <td>{t.category ?? "—"}</td>
                 <td>{t.type}</td>
                 <td>R$ {t.amount.toFixed(2)}</td>
                 <td>{t.date}</td>
@@ -178,17 +173,17 @@ export default function Transactions() {
 
             <input
               placeholder="Descrição"
-              value={form.description}
+              value={form.title}
               onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
+                setForm({ ...form, title: e.target.value })
               }
             />
 
             <input
               placeholder="Categoria"
-              value={form.categoryName}
+              value={form.category}
               onChange={(e) =>
-                setForm({ ...form, categoryName: e.target.value })
+                setForm({ ...form, category: e.target.value })
               }
             />
 

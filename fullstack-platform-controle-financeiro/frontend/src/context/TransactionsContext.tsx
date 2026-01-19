@@ -25,6 +25,7 @@ interface CreateTransactionDTO {
   title: string;
   type: "INCOME" | "EXPENSE";
   amount: number;
+  category?: string | null;
 }
 
 /* =======================
