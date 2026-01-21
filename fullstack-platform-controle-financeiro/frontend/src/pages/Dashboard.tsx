@@ -11,27 +11,33 @@ export default function Dashboard() {
   const monthFormatted =
     currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
 
+  const getMonthName = (dateValue: string) => {
+    if (!dateValue) return "";
+    const parsed = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return "";
+    const monthName = parsed.toLocaleString("pt-BR", { month: "long" });
+    return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  };
+
   /* RECEITAS DO MÊS */
   const receitas = transactions
-    .filter(
-      (t) => t.type === "Entrada" && t.month === monthFormatted
-    )
+    .filter((t) => t.type === "Entrada" && getMonthName(t.date) === monthFormatted)
     .reduce<{ name: string; value: number }[]>((acc, t) => {
-      const found = acc.find((i) => i.name === t.category);
-      if (found) found.value += t.value;
-      else acc.push({ name: t.category, value: t.value });
+      const categoryName = t.category ?? "Sem categoria";
+      const found = acc.find((i) => i.name === categoryName);
+      if (found) found.value += t.amount;
+      else acc.push({ name: categoryName, value: t.amount });
       return acc;
     }, []);
 
   /* DESPESAS DO MÊS */
   const despesas = transactions
-    .filter(
-      (t) => t.type === "Saída" && t.month === monthFormatted
-    )
+    .filter((t) => t.type === "Saída" && getMonthName(t.date) === monthFormatted)
     .reduce<{ name: string; value: number }[]>((acc, t) => {
-      const found = acc.find((i) => i.name === t.category);
-      if (found) found.value += t.value;
-      else acc.push({ name: t.category, value: t.value });
+      const categoryName = t.category ?? "Sem categoria";
+      const found = acc.find((i) => i.name === categoryName);
+      if (found) found.value += t.amount;
+      else acc.push({ name: categoryName, value: t.amount });
       return acc;
     }, []);
 

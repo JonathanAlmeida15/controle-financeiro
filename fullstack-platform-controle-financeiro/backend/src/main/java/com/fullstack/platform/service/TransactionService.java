@@ -32,6 +32,9 @@ public class TransactionService {
         t.setAmount(updated.getAmount());
         t.setType(updated.getType());
         t.setCategory(updated.getCategory());
+        if (updated.getOccurredAt() != null) {
+            t.setOccurredAt(updated.getOccurredAt());
+        }
 
         return repository.save(t);
     }
