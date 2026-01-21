@@ -33,7 +33,9 @@ public class Transaction {
     public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
-        this.occurredAt = now;
+        if (this.occurredAt == null) {
+            this.occurredAt = now;
+        }
     }
 
     // getters e setters
