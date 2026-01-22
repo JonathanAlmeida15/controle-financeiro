@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
-import "../styles/transactions.css";
+import "../styles/Transactions.css";
 import { useTransactions, Transaction as TransactionItem } from "../context/TransactionsContext";
 
 export default function Transactions() {

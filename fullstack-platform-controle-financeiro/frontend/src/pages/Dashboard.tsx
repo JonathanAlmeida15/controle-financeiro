@@ -1,7 +1,7 @@
 import Navbar from "../components/Navbar";
 import PieChartCard from "../components/charts/PieChartCard";
 import BarChartYear from "../components/charts/BarChartYear";
-import "../styles/dashboard.css";
+import "../styles/Dashboard.css";
 import { useTransactions } from "../context/TransactionsContext";
 
 export default function Dashboard() {
