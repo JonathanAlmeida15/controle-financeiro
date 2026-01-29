@@ -8,14 +8,15 @@ const CATEGORY_BUDGET_KEY = "budgetByCategory";
 type BudgetMap = Record<string, number>;
 
 export default function Settings() {
-  const [totalBudget, setTotalBudget] = useState("");
+  const [totalBudget, setTotalBudget] = useState(
+    localStorage.getItem(TOTAL_BUDGET_KEY) ?? ""
+  );
   const [categoryName, setCategoryName] = useState("");
   const [categoryBudget, setCategoryBudget] = useState("");
   const [feedback, setFeedback] = useState("");
-
-  const parsedCategoryBudgets: BudgetMap = JSON.parse(
-    localStorage.getItem(CATEGORY_BUDGET_KEY) ?? "{}"
-  );
+  const [categoryBudgets, setCategoryBudgets] = useState<BudgetMap>(() => (
+    JSON.parse(localStorage.getItem(CATEGORY_BUDGET_KEY) ?? "{}")
+  ));
 
   const handleSaveTotal = () => {
     const value = Number(totalBudget);
@@ -36,11 +37,12 @@ export default function Settings() {
     }
 
     const updatedBudgets = {
-      ...parsedCategoryBudgets,
+      ...categoryBudgets,
       [trimmedName]: value
     };
 
     localStorage.setItem(CATEGORY_BUDGET_KEY, JSON.stringify(updatedBudgets));
+    setCategoryBudgets(updatedBudgets);
     setCategoryName("");
     setCategoryBudget("");
     setFeedback("Orçamento por categoria atualizado.");
@@ -105,13 +107,13 @@ export default function Settings() {
 
           <div className="settings-budget-list">
             <h3>Orçamentos cadastrados</h3>
-            {Object.keys(parsedCategoryBudgets).length === 0 ? (
+            {Object.keys(categoryBudgets).length === 0 ? (
               <div className="settings-placeholder">
                 Nenhum orçamento por categoria cadastrado.
               </div>
             ) : (
               <ul>
-                {Object.entries(parsedCategoryBudgets).map(([name, value]) => (
+                {Object.entries(categoryBudgets).map(([name, value]) => (
                   <li key={name}>
                     {name}: R$ {value.toFixed(2)}
                   </li>
