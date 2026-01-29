@@ -19,12 +19,15 @@ export interface Transaction {
   amount: number;
   date: string;
   hour: string;
+  occurredAt?: string;
 }
 
 interface CreateTransactionDTO {
   title: string;
   type: "INCOME" | "EXPENSE";
   amount: number;
+  category?: string | null;
+  occurredAt?: string;
 }
 
 /* =======================
@@ -61,7 +64,7 @@ api.interceptors.request.use((config) => {
 ======================= */
 
 function normalizeTransaction(t: any): Transaction {
-  const dateTime = t.createdAt ?? "";
+  const dateTime = t.occurredAt ?? t.createdAt ?? "";
   const [date = "", time = ""] = dateTime.split("T");
 
   return {
@@ -71,7 +74,8 @@ function normalizeTransaction(t: any): Transaction {
     type: t.type === "INCOME" ? "Entrada" : "Saída",
     amount: Number(t.amount ?? 0),
     date,
-    hour: time.substring(0, 5)
+    hour: time.substring(0, 5),
+    occurredAt: t.occurredAt ?? undefined
   };
 }
 
@@ -103,7 +107,8 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       title: t.title,
       amount: t.amount,
       type: t.type === "Entrada" ? "INCOME" : "EXPENSE",
-      category: t.category
+      category: t.category,
+      occurredAt: t.occurredAt
     });
 
     await fetchTransactions();
