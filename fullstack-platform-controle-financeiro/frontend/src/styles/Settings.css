@@ -105,3 +105,61 @@
   color: #bae6fd;
   font-weight: 600;
 }
+
+.goals-list {
+  display: grid;
+  gap: 12px;
+}
+
+.goal-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 17, 23, 0.6);
+  border: 1px solid transparent;
+}
+
+.goal-complete {
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.goal-header span {
+  color: #94a3b8;
+}
+
+.goal-values {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.goal-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: #0f1117;
+  overflow: hidden;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22d3ee, #38bdf8);
+}
+
+.goal-badge {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
