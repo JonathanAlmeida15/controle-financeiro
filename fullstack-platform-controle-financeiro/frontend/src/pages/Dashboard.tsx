@@ -11,6 +11,8 @@ export default function Dashboard() {
   const monthFormatted =
     currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
 
+  const totalBudget = Number(localStorage.getItem("monthlyBudget") ?? 0);
+
   const getMonthName = (dateValue: string) => {
     if (!dateValue) return "";
     const parsed = new Date(`${dateValue}T00:00:00`);
@@ -41,6 +43,14 @@ export default function Dashboard() {
       return acc;
     }, []);
 
+  const totalSpent = transactions
+    .filter((t) => t.type === "Saída" && getMonthName(t.date) === monthFormatted)
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const budgetProgress = totalBudget > 0
+    ? Math.min((totalSpent / totalBudget) * 100, 100)
+    : 0;
+
   return (
     <>
       <Navbar />
@@ -62,6 +72,21 @@ export default function Dashboard() {
 
         <div className="chart-full">
           <BarChartYear />
+        </div>
+
+        <div className="budget-progress">
+          <div className="budget-progress-header">
+            <h3>Progresso do orçamento mensal</h3>
+            <span>
+              R$ {totalSpent.toFixed(2)} / R$ {totalBudget.toFixed(2)}
+            </span>
+          </div>
+          <div className="budget-progress-bar">
+            <div
+              className="budget-progress-fill"
+              style={{ width: `${budgetProgress}%` }}
+            />
+          </div>
         </div>
       </div>
     </>
