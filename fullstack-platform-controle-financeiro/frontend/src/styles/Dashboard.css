@@ -2,6 +2,7 @@
   padding: 40px;
   min-height: 100vh;
   background: radial-gradient(circle at top, #1b1f2a, #0f1117);
+  font-weight: 700;
 }
 
 .charts-row {
@@ -54,4 +55,46 @@
 
 .dashboard-header nav a:hover {
   color: #22d3ee;
+}
+
+.dashboard-container .recharts-cartesian-axis-tick-value {
+  fill: #000000;
+  font-weight: 700;
+}
+
+.dashboard-container .recharts-tooltip-label {
+  color: #000000;
+  font-weight: 700;
+}
+
+.dashboard-container .recharts-default-tooltip {
+  font-weight: 700;
+}
+
+.budget-progress {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #1f2535, #141824);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.budget-progress-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.budget-progress-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: #0f1117;
+  overflow: hidden;
+}
+
+.budget-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22d3ee, #38bdf8);
 }

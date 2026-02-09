@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
-import "../styles/transactions.css";
+import "../styles/Transactions.css";
 import { useTransactions, Transaction as TransactionItem } from "../context/TransactionsContext";
 
 export default function Transactions() {
@@ -24,7 +24,9 @@ export default function Transactions() {
     title: "",
     category: "",
     type: "Entrada",
-    amount: ""
+    amount: "",
+    date: new Date().toISOString().split("T")[0],
+    hour: new Date().toTimeString().slice(0, 5)
   });
 
   function openNew() {
@@ -33,7 +35,9 @@ export default function Transactions() {
       title: "",
       category: "",
       type: "Entrada",
-      amount: ""
+      amount: "",
+      date: new Date().toISOString().split("T")[0],
+      hour: new Date().toTimeString().slice(0, 5)
     });
     setShowModal(true);
   }
@@ -44,7 +48,9 @@ export default function Transactions() {
       title: t.title,
       category: t.category ?? "",
       type: t.type,
-      amount: String(t.amount)
+      amount: String(t.amount),
+      date: t.date,
+      hour: t.hour
     });
     setShowModal(true);
   }
@@ -55,6 +61,8 @@ export default function Transactions() {
       return;
     }
 
+    const occurredAt = `${form.date}T${form.hour}:00`;
+
     if (editingId) {
       const original = transactions.find(t => t.id === editingId);
       if (!original) return;
@@ -64,14 +72,16 @@ export default function Transactions() {
         title: form.title,
         category: form.category || null,
         type: form.type,
-        amount: Number(form.amount)
+        amount: Number(form.amount),
+        occurredAt
       });
     } else {
       await addTransaction({
         title: form.title,
         category: form.category || null,
         type: form.type === "Entrada" ? "INCOME" : "EXPENSE",
-        amount: Number(form.amount)
+        amount: Number(form.amount),
+        occurredAt
       });
     }
 
@@ -203,6 +213,22 @@ export default function Transactions() {
               value={form.amount}
               onChange={(e) =>
                 setForm({ ...form, amount: e.target.value })
+              }
+            />
+
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) =>
+                setForm({ ...form, date: e.target.value })
+              }
+            />
+
+            <input
+              type="time"
+              value={form.hour}
+              onChange={(e) =>
+                setForm({ ...form, hour: e.target.value })
               }
             />
 
